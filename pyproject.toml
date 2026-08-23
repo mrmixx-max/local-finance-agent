@@ -1,0 +1,32 @@
+[project]
+name = "local-finance-agent"
+version = "0.1.0"
+description = "A privacy-first, local-first AI finance copilot. Import CSV statements, categorize transactions, detect recurring costs, generate monthly reports — all on your machine."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Proprietary" }  # LICENSE decision open — see docs/roadmap.md
+authors = [{ name = "Erik Gieske" }]
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+    "pydantic>=2.6",
+    "pyyaml>=6.0",
+    "python-dateutil>=2.9",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "httpx>=0.27"]
+
+[project.scripts]
+lfa = "packages.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["packages*", "apps*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"

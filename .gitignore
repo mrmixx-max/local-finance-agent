@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+
+# Local data & secrets — NEVER commit real financial data
+.env
+*.db
+*.sqlite
+*.sqlite3
+data/raw/*
+data/processed/*
+data/db/*
+!data/raw/.gitkeep
+!data/db/.gitkeep
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Node (web dashboard)
+node_modules/
+apps/web/dist/

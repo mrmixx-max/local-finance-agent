@@ -1,0 +1,67 @@
+# Default categorization rules (Germany pack, sample subset)
+# Matching: merchant alias OR regex on raw description.
+# confidence: 0..1 — below review_threshold (0.6) the txn lands in the review queue.
+
+rules:
+  - category: Groceries
+    match_any:
+      - rewe
+      - edeka
+      - aldi
+      - lidl
+      - netto
+      - penny
+      - kaufland
+    confidence: 0.9
+
+  - category: Subscriptions
+    match_any:
+      - netflix
+      - spotify
+      - disney
+      - audible
+      - steam
+    confidence: 0.9
+
+  - category: Utilities
+    match_any:
+      - stadtwerke
+      - vattenfall
+      - telekom
+      - vodafone
+      - osnatel
+    confidence: 0.85
+
+  - category: Rent
+    match_any:
+      - miete
+      - warmmiete
+      - hausverwaltung
+    confidence: 0.95
+
+  - category: Salary
+    match_any:
+      - gehalt
+      - lohn
+      - salary
+    confidence: 0.95
+
+  - category: Insurance
+    match_any:
+      - versicherung
+      - allianz
+      - huk
+      - check24
+    confidence: 0.85
+
+  - category: Restaurants
+    match_any:
+      - restaurant
+      - pizzeria
+      - döner
+      - cafe
+      - bar
+    confidence: 0.7
+
+review_threshold: 0.6
+uncategorized_category: Uncategorized

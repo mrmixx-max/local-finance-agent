@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Local Finance Agent</title>
+<style>
+  :root { --bg:#101418; --card:#1a2026; --fg:#e8edf2; --mut:#8b98a5; --acc:#4cc38a; --warn:#e0a458; }
+  * { box-sizing:border-box; margin:0; font-family:system-ui,sans-serif; }
+  body { background:var(--bg); color:var(--fg); padding:24px; max-width:900px; margin:auto; }
+  h1 { font-size:22px; margin-bottom:4px; }
+  .sub { color:var(--mut); margin-bottom:20px; font-size:14px; }
+  button { background:var(--acc); border:none; color:#0b120e; padding:10px 18px;
+           border-radius:8px; cursor:pointer; font-weight:600; margin-right:8px; }
+  button.ghost { background:transparent; color:var(--acc); border:1px solid var(--acc); }
+  input { background:var(--card); border:1px solid #2c353d; color:var(--fg);
+          padding:9px 12px; border-radius:8px; width:340px; margin-right:8px; }
+  .cards { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:18px 0; }
+  .card { background:var(--card); border-radius:12px; padding:16px; }
+  .card .label { color:var(--mut); font-size:12px; text-transform:uppercase; letter-spacing:.06em; }
+  .card .value { font-size:24px; margin-top:6px; font-variant-numeric:tabular-nums; }
+  table { width:100%; border-collapse:collapse; background:var(--card); border-radius:12px;
+          overflow:hidden; margin-top:8px; }
+  th,td { text-align:left; padding:10px 14px; font-size:14px; border-bottom:1px solid #242c34; }
+  th { color:var(--mut); font-weight:500; font-size:12px; text-transform:uppercase; }
+  td.num { text-align:right; font-variant-numeric:tabular-nums; }
+  section { margin-top:26px; }
+  h2 { font-size:15px; color:var(--mut); margin-bottom:8px; font-weight:500; }
+  pre { background:var(--card); border-radius:12px; padding:16px; white-space:pre-wrap;
+        font-size:13px; line-height:1.55; display:none; }
+  #msg { color:var(--warn); font-size:13px; min-height:18px; margin:8px 0; }
+</style>
+</head>
+<body>
+<h1>🐾 Local Finance Agent</h1>
+<div class="sub">privacy-first · local-first · keine Cloud nötig</div>
+
+<button onclick="loadDemo()">Demo-Daten laden</button>
+<input id="csvPath" placeholder="Pfad zu CSV (optional)">
+<button class="ghost" onclick="importCsv()">CSV importieren</button>
+
+<div class="cards">
+  <div class="card"><div class="label">Einnahmen</div><div class="value" id="inflow">–</div></div>
+  <div class="card"><div class="label">Ausgaben</div><div class="value" id="outflow">–</div></div>
+  <div class="card"><div class="label">Saldo</div><div class="value" id="net">–</div></div>
+</div>
+
+<section>
+  <h2>Wiederkehrende Kosten</h2>
+  <table id="recurring"><thead><tr>
+    <th>Händler</th><th>typ. Betrag</th><th>Intervall</th><th>≈/Monat</th><th>Häufigkeit</th>
+  </tr></thead><tbody></tbody></table>
+</section>
+
+<section>
+  <h2>Review-Queue</h2>
+  <table id="review"><thead><tr>
+    <th>Datum</th><th>Betrag</th><th>Beschreibung</th><th>Grund</th>
+  </tr></thead><tbody></tbody></table>
+</section>
+
+<section>
+  <h2>Monatsreport (<span id="repLabel">aktueller Monat</span>)</h2>
+  <button onclick="genReport()">Report erzeugen</button>
+  <button class="ghost" onclick="downloadCsv()">CSV herunterladen</button>
+  <pre id="report"></pre>
+</section>
+
+<div id="msg"></div>
+
+<script>
+const api = '';
+
+function eur(c){ const s=c<0?'-':''; return s+(Math.abs(c)/100).toFixed(2).replace('.',',')+' €'; }
+
+async function j(url, opts){
+  const r = await fetch(api+url, opts);
+  if(!r.ok){ throw new Error((await r.json()).detail || r.status); }
+  return r.json();
+}
+
+async function loadDemo(){
+  try{
+    msg('Lade Demo-Daten…');
+    await j('/api/demo-data', {method:'POST'});
+    await refresh(); msg('✓ Demo-Daten geladen');
+  }catch(e){ msg('Fehler: '+e.message); }
+}
+
+async function importCsv(){
+  const path = document.getElementById('csvPath').value.trim();
+  if(!path) return msg('Bitte Pfad angeben');
+  try{
+    msg('Importiere…');
+    const r = await j('/api/import', {method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({path})});
+    await refresh();
+    msg(`✓ ${r.inserted} neu, ${r.duplicates} Duplikate übersprungen, ${r.errors.length} Fehler`);
+  }catch(e){ msg('Fehler: '+e.message); }
+}
+
+async function refresh(){
+  const now = new Date();
+  const y=now.getFullYear(), m=now.getMonth()+1;
+  const s = await j(`/api/summary/${y}/${m}`);
+  inflow.textContent=s.total_inflow; outflow.textContent=s.total_outflow; net.textContent=s.net;
+
+  const rec = (await j('/api/recurring')).items;
+  document.querySelector('#recurring tbody').innerHTML = rec.map(r=>`<tr>
+    <td>${r.merchant}</td><td class="num">${eur(r.typical_amount_cents)}</td>
+    <td class="num">${r.interval_days} T.</td><td class="num">${eur(r.estimated_monthly_cents)}</td>
+    <td class="num">${r.occurrences}× / ${Math.round(r.regularity*100)}%</td></tr>`).join('');
+
+  const rev = (await j('/api/review')).items;
+  document.querySelector('#review tbody').innerHTML = rev.slice(0,10).map(r=>`<tr>
+    <td>${r.txn_date}</td><td class="num">${eur(r.amount_cents)}</td>
+    <td>${r.raw_description.slice(0,50)}</td><td>${r.reason}</td></tr>`).join('')
+    || '<tr><td colspan="4" style="color:var(--mut)">nichts offen 🎉</td></tr>';
+}
+
+async function genReport(){
+  const now=new Date(), y=now.getFullYear(), m=now.getMonth()+1;
+  try{
+    const r = await j(`/api/report/${y}/${m}`);
+    repLabel.textContent=`${String(m).padStart(2,'0')}/${y}`;
+    report.style.display='block'; report.textContent=r.markdown;
+  }catch(e){ msg('Fehler: '+e.message); }
+}
+
+function downloadCsv(){
+  const now=new Date();
+  window.location=`/api/report/${now.getFullYear()}/${now.getMonth()+1}/download`;
+}
+
+function msg(t){ document.getElementById('msg').textContent=t; }
+
+refresh().catch(e=>msg('Backend nicht erreichbar — läuft der Server?'));
+</script>
+</body>
+</html>
