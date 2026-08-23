@@ -12,6 +12,15 @@
 - [x] Synthetischer Demo-Datensatz
 - [x] Test-Suite (18 Tests)
 
+## 0.1.1 — Market Module (descriptive analytics) ✅
+
+- [x] `packages/markets`: Instrumente, Positionen, Preis-Historie (eigene DB)
+- [x] CSV-Preis-Import mit Upsert (re-imports safe)
+- [x] Portfolio-Summary (Wert, Kosten, P/L)
+- [x] Annualisierte Volatilität (deskriptive Statistik vergangener Preise)
+- [x] Scope-Guard-Test: keine Prediction/Signal/Recommendation-APIs im Modul
+- [x] Demo-Portfolio + synthetische Kursreihen (seeded, reproduzierbar)
+
 ## 0.2 — AI Query Layer
 
 - [ ] Ollama-Provider-Abstraktion (`packages/models`)

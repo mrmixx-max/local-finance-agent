@@ -106,6 +106,24 @@ rules:
 review_threshold: 0.6     # below this → review queue
 ```
 
+## Market module (descriptive analytics)
+
+Track a portfolio and compute descriptive statistics — **no predictions,
+no signals, no recommendations**, by explicit scope decision.
+
+```bash
+python -m packages.market_cli demo            # sample portfolio + 1y synthetic prices
+python -m packages.market_cli import-prices prices.csv IWDA   # CSV with [date,close]
+python -m packages.market_cli add-position IWDA 12.5 82.40
+python -m packages.market_cli portfolio       # value, cost, P/L per position
+python -m packages.market_cli vol BTC-EUR     # annualized volatility of past returns
+```
+
+Market data lives in its own SQLite file (`LFA_MARKET_DB`, default
+`data/db/market.db`) — it never mixes with the transaction ledger.
+A test (`test_scope_guard_no_prediction_api`) enforces that the module
+surface stays free of prediction/recommendation functions.
+
 ## Tests
 
 ```bash
@@ -114,7 +132,7 @@ pytest tests/ -q
 
 Covers: amount/date parsing (DE+EN formats), header mapping, dedup behavior,
 rule classification, the full demo pipeline (import → categorize → recurring →
-report), and API smoke tests via TestClient.
+report), market module (positions, price upsert, volatility), and API smoke tests.
 
 ## Security
 
