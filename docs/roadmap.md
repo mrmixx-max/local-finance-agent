@@ -45,6 +45,6 @@
 
 ## Offene Entscheidungen
 
-- **Lizenz**: MIT vs. Apache-2.0 vs. GPL — vor dem ersten Public-Release klären.
+- ~~**Lizenz**~~ ✅ Apache-2.0 (Commit mit LICENSE, 2026-08-23)
 - **UI-Framework** fürs Dashboard jenseits der Single-File-Version.
 - Namensrechtlichkeit "Local Finance Agent" prüfen vor Public-Launch.

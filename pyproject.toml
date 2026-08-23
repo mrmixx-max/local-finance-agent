@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "A privacy-first, local-first AI finance copilot. Import CSV statements, categorize transactions, detect recurring costs, generate monthly reports — all on your machine."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "Proprietary" }  # LICENSE decision open — see docs/roadmap.md
+license = { text = "Apache-2.0" }
 authors = [{ name = "Erik Gieske" }]
 dependencies = [
     "fastapi>=0.110",

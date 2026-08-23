@@ -156,7 +156,7 @@ before submitting a parser PR.
 
 ## License
 
-Not yet decided — see `docs/roadmap.md`. Until a license is added, all rights reserved.
+Apache-2.0 — see [LICENSE](LICENSE).
 
 ## Grenzen (read before trusting it)
 
